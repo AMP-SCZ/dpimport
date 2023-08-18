@@ -10,11 +10,9 @@ import dpimport
 import logging
 import argparse as ap
 import collections as col
-import dpimport.importer as importer
 from dpimport.database import Database
 from pymongo import DeleteMany, UpdateMany
 from pymongo.errors import BulkWriteError
-import pprint
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +67,6 @@ def update_last_day(db, list_of_updated_participants):
             participant.update({"end": cursor_data["end"]})
 
         for participant in list_of_updated_participants:
-            pprint.pprint(participant)
             db.assessmentSubjectDayData.update_many(
                 query,
                 {"$set": {"end": participant["end"], "time_end": participant["end"]}},
