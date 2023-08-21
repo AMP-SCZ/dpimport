@@ -4,7 +4,6 @@ import os
 import sys
 import ssl
 import glob
-import yaml
 import dppylib
 import dpimport
 import logging
@@ -20,7 +19,6 @@ logger = logging.getLogger(__name__)
 def main():
     # This takes the yaml and reads it and creates variables
     parser = ap.ArgumentParser()
-    parser.add_argument("-c", "--config")
     parser.add_argument("-d", "--dbname", default="dpdmongo")
     parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument("expr")
@@ -31,11 +29,8 @@ def main():
         level = logging.DEBUG
     logging.basicConfig(level=level)
 
-    with open(os.path.expanduser(args.config), "r") as fo:
-        config = yaml.load(fo, Loader=yaml.SafeLoader)
-
     # connect to database
-    db = Database(config, args.dbname).connect()
+    db = Database(args.dbname).connect()
     updated_participants = []
     # iterate over matching files on the filesystem
     for f in glob.iglob(args.expr, recursive=True):
