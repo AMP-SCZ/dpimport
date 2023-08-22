@@ -4,25 +4,22 @@ import os
 import sys
 import ssl
 import glob
-import yaml
-import dppylib
 import dpimport
 import logging
 import argparse as ap
 import collections as col
-import dpimport.importer as importer
 from dpimport.database import Database
 from pymongo import DeleteMany, UpdateMany
 from pymongo.errors import BulkWriteError
 
 logger = logging.getLogger(__name__)
 
+
 def main():
     parser = ap.ArgumentParser()
-    parser.add_argument('-c', '--config')
-    parser.add_argument('-d', '--dbname', default='dpdata')
-    parser.add_argument('-v', '--verbose', action='store_true')
-    parser.add_argument('expr')
+    parser.add_argument("-d", "--dbname", default="dpdmongo")
+    parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument("expr")
     args = parser.parse_args()
 
     level = logging.INFO
@@ -30,163 +27,53 @@ def main():
         level = logging.DEBUG
     logging.basicConfig(level=level)
 
-    with open(os.path.expanduser(args.config), 'r') as fo:
-        config = yaml.load(fo, Loader=yaml.SafeLoader)
-
-    db = Database(config, args.dbname).connect()
+    db = Database(args.dbname).connect()
+    updated_participants = []
 
     # iterate over matching files on the filesystem
     for f in glob.iglob(args.expr, recursive=True):
         dirname = os.path.dirname(f)
         basename = os.path.basename(f)
         # probe for dpdash-compatibility and gather information
-        probe = dpimport.probe(f)
+        probe = dpimport.probe(f, updated_participants)
         if not probe:
-            logger.debug('document is unknown %s', basename)
+            logger.debug("document is unknown %s", basename)
             continue
-        # nothing to be done
-        if db.exists(probe):
-            logger.info('document exists and is up to date %s', probe['path'])
-            continue
-        logger.info('document does not exist or is out of date %s', probe['path'])
         # import the file
-        logger.info('importing file %s', f)
-        dppylib.import_file(db.db, probe)
+        logger.info("importing file %s", f)
+        dpimport.import_file(db.db, probe)
 
-    logger.info('cleaning metadata')
-    lastday = get_lastday(db.db)
-    if lastday:
-        clean_metadata(db.db, lastday)
+    logger.info("cleaning metadata")
+    update_last_day(db.db, updated_participants)
 
-def clean_metadata(db, max_days):
-    studies = col.defaultdict()
-    subjects = list()
 
-    for subject in max_days:
-        if subject['_id']['study'] not in studies:
-            studies[subject['_id']['study']] = {}
-            studies[subject['_id']['study']]['subject'] = []
-            studies[subject['_id']['study']]['max_day'] = 0
-
-            # if there are more than 2, drop unsynced
-            metadata = list(db.metadata.find(
-                {
-                    'study' : subject['_id']['study']
-                },
-                {
-                    '_id' : True,
-                    'collection' : True,
-                    'synced' : True
-                }
-            ))
-
-            if len(metadata) > 1:
-                for doc in metadata:
-                    if doc['synced'] is False and 'collection' in doc:
-                        db[doc['collection']].drop()
-                    if doc['synced'] is False:
-                        db.metadata.delete_many(
-                            {
-                                '_id': doc['_id']
-                            }
-                        )
-
-        subject_metadata = col.defaultdict()
-        subject_metadata['subject'] = subject['_id']['subject']
-        subject_metadata['synced'] = subject['synced']
-        subject_metadata['days'] = subject['days']
-        subject_metadata['study'] = subject['_id']['study']
-
-        studies[subject['_id']['study']]['max_day'] = studies[subject['_id']['study']]['max_day'] if (studies[subject['_id']['study']]['max_day'] >= subject['days'] ) else subject['days']
-
-        studies[subject['_id']['study']]['subject'].append(subject_metadata)
-
-    for study, subject in iter(studies.items()):
-        bulk_metadata = []
-        bulk_metadata = bulk_metadata + [UpdateMany({'study' : study}, {'$set' :
-            {
-                'synced' : True,
-                'subjects' : studies[study]['subject'],
-                'days' : studies[study]['max_day']
-            }
-        }, upsert=True)]
-        bulk_metadata = bulk_metadata + [DeleteMany({'study' : study, 'synced' : False})]
-        bulk_metadata = bulk_metadata + [UpdateMany({'study' : study }, {'$set' : {'synced' : False}})]
-        try:
-            db.metadata.bulk_write(bulk_metadata)
-        except BulkWriteError as e:
-            logger.error(e)
-
-def get_lastday(db):
-    return list(db.toc.aggregate([
-        {
-            '$group' : {
-                '_id' : {
-                    'study': '$study',
-                    'subject' : '$subject'
-                },
-                'days' : {
-                    '$max' : '$time_end'
-                },
-                'synced' : {
-                    '$max' : '$updated'
-                }
-            }
-        }
-    ]))
-
-def clean_toc(db):
-    logger.info('cleaning table of contents')
-    out_of_sync_tocs = db.toc.find(
-        {
-            'synced' : False
-        },
-        {
-            '_id' : False,
-            'collection' : True,
-            'path' : True 
-        }
-    )
-    
-    for doc in out_of_sync_tocs:
-        db[doc['collection']].delete_many(
-            {
-                'path' : doc['path']
-            }
-        )
-
-    bulk = [DeleteMany({ 'synced' : False })]
+def update_last_day(db, list_of_updated_participants):
     try:
-        db.toc.bulk_write(bulk)
-    except BulkWriteError as e:
-        logger.error(e)
+        for participant in list_of_updated_participants:
+            last_day_cursor = db.assessmentSubjectDayData.aggregate(
+                [
+                    {"$match": participant},
+                    {"$group": {"_id": None, "end": {"$max": "$end"}}},
+                ]
+            )
+            cursor_data = next(last_day_cursor, None)
+            participant.update({"end": cursor_data["end"]})
 
-def clean_toc_study(db, study):
-    logger.info('cleaning table of contents for {0}'.format(study))
-    out_of_sync_tocs = db.toc.find(
-        {
-            'study' : study,
-            'synced' : False
-        },
-        {
-            '_id' : False,
-            'collection' : True,
-            'path' : True 
-        }
-    )
-    for doc in out_of_sync_tocs:
-        db[doc['collection']].delete_many(
-            {
-                'path' : doc['path']
+        for participant in list_of_updated_participants:
+            query = {
+                "subject": participant["subject"],
+                "assessment": participant["assessment"],
             }
-        )
 
-    bulk = [DeleteMany({ 'study' : study, 'synced' : False })]
-    try:
-        db.toc.bulk_write(bulk)
-    except BulkWriteError as e:
+            db.assessmentSubjectDayData.update_many(
+                query,
+                {"$set": {"end": participant["end"], "time_end": participant["end"]}},
+            )
+
+    except Exception as e:
         logger.error(e)
+        return 1
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
-
