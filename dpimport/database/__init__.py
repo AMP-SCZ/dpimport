@@ -14,8 +14,6 @@ class Database(object):
 
     def connect(self):
         uri = os.environ["MONGODB_URI"]
-        print("^^^^^ URI ^^^^^")
-        print(uri)
         self.client = MongoClient(
             uri,
         )
