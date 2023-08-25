@@ -2,7 +2,7 @@ import re
 import os
 import hashlib
 import json
-import pandas as pd
+import polars as pl
 from urllib.parse import quote
 import mimetypes as mt
 import logging
@@ -50,18 +50,14 @@ class DataImporterService:
         ).encode("utf-8")
         hash_collection = hashlib.sha256(collection_base).hexdigest()
         metadata = self._file_info(path)
-
         metadata.update(
             {"role": "data", "collection": hash_collection, **file_extension}
         )
-
         del file_extension["extension"]
 
-        csv_data = self._read_csv(
+        subject_assessments = self._read_csv(
             path,
         )
-        subject_assessments = self.collect_csv_row(csv_data)
-
         self.data_file.update(
             {"metadata": metadata, "subject_assessments": subject_assessments}
         )
@@ -69,8 +65,7 @@ class DataImporterService:
 
     def process_metadata_file(self, path, file_extension):
         metadata = self._file_info(path)
-        csv_data = self._read_csv(path)
-        participants = self.collect_csv_row(csv_data)
+        participants = self._read_csv(path)
 
         metadata.update(
             {
@@ -88,34 +83,8 @@ class DataImporterService:
         return
 
     def _read_csv(self, file_path):
-        try:
-            tfr = pd.read_csv(
-                file_path,
-                memory_map=True,
-                keep_default_na=False,
-                chunksize=1,
-                engine="c",
-                skipinitialspace=True,
-            )
-            for data_frame in tfr:
-                yield data_frame
-
-        except pd.io.common.EmptyDataError as e:
-            logger.error(e)
-        except Exception as e:
-            logger.error(e)
-
-    def _sanitize_columns(self, columns):
-        new_columns = []
-        for column in columns:
-            new_column = (
-                quote(str(column).encode("utf-8"), safe="~()*!.'")
-                .replace(".", "%2E")
-                .replace(" ", "")
-            )
-            new_columns.append(new_column)
-
-        return new_columns
+        df = pl.read_csv(file_path)
+        return df.to_dicts()
 
     def _file_info(self, path):
         mimetype, encoding = mt.guess_type(path)
@@ -136,23 +105,18 @@ class DataImporterService:
             "mode": stat.st_mode,
         }
 
-    def collect_csv_row(self, data_frame):
-        list = []
-        for data in data_frame:
-            data.columns = self._sanitize_columns(data.columns.values.tolist())
-            list.extend(data.to_dict(self.records))
-        return list
-
     def processed_data_to_json(self):
+        print("converting data to json")
         processed_data = (
             json.dumps(self.data_file)
             if self.data_file and len(self.data_file["subject_assessments"]) > 0
             else None
         )
+        print("processing meatada to json")
         processed_metadata = (
             json.dumps(self.metadata_file)
             if self.metadata_file and len(self.metadata_file["participants"]) > 0
             else None
         )
-
+        print("processed json")
         return processed_data, processed_metadata

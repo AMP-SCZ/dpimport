@@ -21,7 +21,6 @@ def main():
         config = yaml.load(fo, Loader=yaml.SafeLoader)
 
     api_url = config["api_url"]
-
     # iterate over matching files on the filesystem
     for file in glob.iglob(args.expr, recursive=True):
         data_file = {}
