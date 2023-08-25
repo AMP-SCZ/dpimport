@@ -3,3 +3,5 @@ columns: 5
 max_days: 45
 participant_count: 5
 api_url: http://localhost:8000/api/v1/import/data/
+api_user: importer
+api_key: super_secret
