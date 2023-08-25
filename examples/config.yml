@@ -1,9 +1,1 @@
-ssl_keyfile: /path/to/ssl/client/key.pem
-ssl_certfile: /path/to/ssl/client/cert.pem
-ssl_ca_certs: /path/to/ssl/ca/cacert.pem
-username: jharvard
-password: *********
-port: 27017
-auth_source: admin
-db: dpdata
-hostname: dpdash.example.org
+api_url: http://localhost:8000/api/v1/import/data/
