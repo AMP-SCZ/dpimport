@@ -29,7 +29,11 @@ or a glob expression (use single quotes to avoid shell expansion)
 
 ```bash
 import.py -c config.yml '/PHOENIX/GENERAL/STUDY_A/SUB_001/DATA_TYPE/processed/*.csv'
+import.py -c config.yml '/PHOENIX/GENERAL/STUDY_A/SUB_001/DATA_TYPE/processed/*.csv' -n 8
 ```
+
+`-n 8` is for parallelly importing 8 files. The default is `-n 1`.
+
 
 You may also now use the `**` recursive glob expression, for example:
 
