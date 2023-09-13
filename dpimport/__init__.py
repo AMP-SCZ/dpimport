@@ -39,6 +39,11 @@ def probe(path):
     # add other necessary information to info object
     mimetype,encoding = mt.guess_type(path)
     stat = os.stat(path)
+
+    with open(path) as f:
+        content = f.read().strip()
+        content_hash = hashlib.sha256(content.encode()).hexdigest()
+    
     info.update({
         'path' : path,
         'filetype' : mimetype,
@@ -52,7 +57,8 @@ def probe(path):
         'uid' : stat.st_uid,
         'gid' : stat.st_gid,
         'mode' : stat.st_mode,
-        'role': role
+        'role': role,
+        'content': content_hash
     })
     return info
 
