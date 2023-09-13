@@ -68,8 +68,7 @@ class Database(object):
         :type probe: dict
         '''
         doc = self.db.toc.find_one({
-            'path': probe['path'],
-            'size': probe['size']
+            'content': probe['content'],
         })
         if doc:
             return True
