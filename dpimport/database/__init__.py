@@ -68,9 +68,14 @@ class Database(object):
         :type probe: dict
         '''
         doc = self.db.toc.find_one({
-            'path': probe['path'],
-            'size': probe['size']
+            'content': probe['content']
         })
+        if not doc:
+            # since it's not in data, check if it's in metadata
+            doc = self.db.metadata.find_one({
+                'content': probe['content']
+            })
+
         if doc:
             return True
         return False

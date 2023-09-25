@@ -35,6 +35,10 @@ def stat_file(import_dir, file_name, file_path):
     if not os.path.exists(file_path):
         return None
 
+    with open(file_path) as f:
+        content = f.read().strip()
+        content_hash = hashlib.sha256(content.encode()).hexdigest()
+
     file_stat = os.stat(file_path)
     file_info.update({
         'path' : file_path,
@@ -48,7 +52,8 @@ def stat_file(import_dir, file_name, file_path):
         'size' : file_stat.st_size,
         'uid' : file_stat.st_uid,
         'gid' : file_stat.st_gid,
-        'mode' : file_stat.st_mode
+        'mode' : file_stat.st_mode,
+        'content' : content_hash
     })
 
     return file_info
@@ -72,7 +77,7 @@ def diff_files(db, collection, file_info):
         logger.info('{FILE} does not exist in the database. Importing.'.format(FILE=file_path))
         import_data(db, collection, file_info)
     else:
-        if db_data['mtime'] != file_info['mtime'] or db_data['size'] != file_info['size']:
+        if db_data['content'] != file_info['content']:
             logger.info('{FILE} has been modified. Re-importing.'.format(FILE=file_path))
             dbtools.remove_doc(db, collection, db_data, file_info['role'])
             import_data(db, collection, file_info)
