@@ -15,14 +15,14 @@ class TestImporter(TestCase):
     def test_file_divergence(self):
         path = "blah.csv"
 
-        assert self.importer.diverge_files(path) == None
+        assert self.importer.process_file(path) == None
 
         with patch.object(
             self.importer, "process_data_file"
         ) as mocked_process_data_file:
             data_file_path = "study-subject-assessment-day1to4.csv"
 
-            self.importer.diverge_files(data_file_path)
+            self.importer.process_file(data_file_path)
             mocked_process_data_file.assert_called_once()
 
         with patch.object(
@@ -30,7 +30,7 @@ class TestImporter(TestCase):
         ) as mocked_process_metadata_file:
             metadata_file_path = "site_metadata.csv"
 
-            self.importer.diverge_files(metadata_file_path)
+            self.importer.process_file(metadata_file_path)
             mocked_process_metadata_file.assert_called_once()
 
     def test_processed_data_to_json(self):
@@ -86,19 +86,11 @@ class TestImporter(TestCase):
 
         with patch.object(
             self.importer, "_file_info", return_value=mock_data_file_info
-        ), patch.object(
-            self.importer, "_read_csv", return_value={"columns": []}
-        ), patch.object(
-            self.importer, "collect_csv_row", return_value=subject_assessments
-        ):
+        ), patch.object(self.importer, "_read_csv", return_value=subject_assessments):
             self.importer.process_data_file(data_file_path, data_file_extension_to_dict)
         with patch.object(
             self.importer, "_file_info", return_value=mock_file_info
-        ), patch.object(
-            self.importer, "_read_csv", return_value={"columns": []}
-        ), patch.object(
-            self.importer, "collect_csv_row", return_value=participants
-        ):
+        ), patch.object(self.importer, "_read_csv", return_value=participants):
             self.importer.process_metadata_file(
                 metadata_file_path, metadata_file_extension_to_dict
             )
