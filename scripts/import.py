@@ -3,12 +3,9 @@
 import os
 import glob
 import yaml
-import logging
 import argparse as ap
 from data_importer_service import data_import_service
-from api import api
-
-logger = logging.getLogger(__name__)
+from importer_service import api_importer_service
 
 
 def main():
@@ -21,6 +18,11 @@ def main():
         config = yaml.load(fo, Loader=yaml.SafeLoader)
 
     api_url = config["api_url"]
+    credentials = {
+        "x-api-user": config["api_user"],
+        "x-api-key": config["api_key"],
+    }
+    api = api_importer_service.ImporterApiService(credentials)
     # iterate over matching files on the filesystem
     for file in glob.iglob(args.expr, recursive=True):
         data_file = {}

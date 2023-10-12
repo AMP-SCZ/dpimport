@@ -11,7 +11,6 @@ class CSVDataService:
         self.max_days = max_days
         self.columns = []
         self.day_data = []
-        self.assessment_data = []
         self.path = path
 
     def _generate_columns(self):

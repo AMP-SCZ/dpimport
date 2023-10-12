@@ -27,17 +27,16 @@ class DataImporterService:
 
     def process_file(self, path):
         basename = os.path.basename(path)
-        data_file = self.DATAFILE.match(basename)
-        metadata_file = self.METADATA.match(basename)
+        is_data_file = self.DATAFILE.match(basename)
+        is_metadata_file = self.METADATA.match(basename)
 
-        if data_file:
-            data_file_info = data_file.groupdict()
+        if is_data_file:
+            file_extension_to_dict = self.DATAFILE.match(basename).groupdict()
+            return self.process_data_file(path, file_extension_to_dict)
+        if is_metadata_file:
+            metadata_file_extension = self.METADATA.match(basename).groupdict()
 
-            return self.process_data_file(path, data_file_info)
-        if metadata_file:
-            metadata_file_info = metadata_file.groupdict()
-
-            return self.process_metadata_file(path, metadata_file_info)
+            return self.process_metadata_file(path, metadata_file_extension)
         else:
             return None
 
@@ -106,17 +105,15 @@ class DataImporterService:
         }
 
     def processed_data_to_json(self):
-        print("converting data to json")
         processed_data = (
             json.dumps(self.data_file)
             if self.data_file and len(self.data_file["subject_assessments"]) > 0
             else None
         )
-        print("processing meatada to json")
         processed_metadata = (
             json.dumps(self.metadata_file)
             if self.metadata_file and len(self.metadata_file["participants"]) > 0
             else None
         )
-        print("processed json")
+        print("processed file data to json")
         return processed_data, processed_metadata
