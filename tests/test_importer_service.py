@@ -112,7 +112,7 @@ class TestImporter(TestCase):
         )
         assert (
             data_to_json[1]
-            == '{"metadata": {"filetype": "text/csv", "encoding": "utf-8", "dirname": "/path/to/files", "mtime": 1234567890.0, "size": 1024, "uid": 1000, "gid": 1000, "mode": 420, "role": "metadata", "study": "site", "extension": ".csv"}, "participants": [{"Active": 1, "Consent": "-", "study": "YA", "subject": "YA1"}, {"Active": 1, "Consent": "-", "study": "YA", "subject": "YA2"}]}'
+            == '{"metadata": {"filetype": "text/csv", "encoding": "utf-8", "dirname": "/path/to/files", "mtime": 1234567890.0, "size": 1024, "uid": 1000, "gid": 1000, "mode": 420, "role": "metadata", "study": "site", "extension": ".csv"}, "participants": [{"Active": 1, "Consent": "-", "subject": "YA1", "study": "YA"}, {"Active": 1, "Consent": "-", "subject": "YA2", "study": "YA"}]}'
         )
 
         self.importer.data_file["subject_assessments"] = []
@@ -121,5 +121,5 @@ class TestImporter(TestCase):
 
         assert data_to_json == (
             None,
-            '{"metadata": {"filetype": "text/csv", "encoding": "utf-8", "dirname": "/path/to/files", "mtime": 1234567890.0, "size": 1024, "uid": 1000, "gid": 1000, "mode": 420, "role": "metadata", "study": "site", "extension": ".csv"}, "participants": [{"Active": 1, "Consent": "-", "study": "YA", "subject": "YA1"}, {"Active": 1, "Consent": "-", "study": "YA", "subject": "YA2"}]}',
+            '{"metadata": {"filetype": "text/csv", "encoding": "utf-8", "dirname": "/path/to/files", "mtime": 1234567890.0, "size": 1024, "uid": 1000, "gid": 1000, "mode": 420, "role": "metadata", "study": "site", "extension": ".csv"}, "participants": [{"Active": 1, "Consent": "-", "subject": "YA1", "study": "YA"}, {"Active": 1, "Consent": "-", "subject": "YA2", "study": "YA"}]}',
         )

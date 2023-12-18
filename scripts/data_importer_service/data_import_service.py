@@ -67,8 +67,8 @@ class DataImporterService:
         participants = self._read_csv(path)
 
         for participant in participants:
-            participant["study"] = participant.pop("Study")
             participant["subject"] = participant.pop("Subject ID")
+            participant["study"] = participant.pop("Study")
 
         metadata.update(
             {

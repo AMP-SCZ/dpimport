@@ -23,7 +23,7 @@ def main():
         "x-api-key": config["api_key"],
     }
     api = api_importer_service.ImporterApiService(credentials)
-    # iterate over matching files on the filesystem
+
     for file in glob.iglob(args.expr, recursive=True):
         data_file = {}
         metadata_file = {}
@@ -32,7 +32,6 @@ def main():
         )
         importer_service.process_file(file)
         data, meta = importer_service.processed_data_to_json()
-
         if data:
             api.upsert_file(api.routes(api_url, "day_data"), data)
 
