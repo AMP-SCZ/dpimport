@@ -21,7 +21,7 @@ class ImporterApiService:
         )
         status = r.status_code
         if status != 200:
-            response = r.json()["message"]
+            response = r.json()
             print(response)
         else:
             response = r.json()["data"]

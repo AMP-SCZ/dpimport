@@ -1,8 +1,10 @@
+import math
 import re
 import os
 import hashlib
 import json
 import polars as pl
+
 from urllib.parse import quote
 import mimetypes as mt
 import logging
@@ -57,6 +59,16 @@ class DataImporterService:
         subject_assessments = self._read_csv(
             path,
         )
+        for assessment in subject_assessments:
+            for variable in assessment:
+                isUnsupportedValue = (
+                    assessment[variable] == math.inf
+                    or assessment[variable] == -math.inf
+                    or math.isnan(assessment[variable])
+                )
+                if isUnsupportedValue:
+                    assessment[variable] = None
+
         self.data_file.update(
             {"metadata": metadata, "subject_assessments": subject_assessments}
         )
@@ -86,7 +98,10 @@ class DataImporterService:
         return
 
     def _read_csv(self, file_path):
-        df = pl.read_csv(file_path)
+        try:
+            df = pl.read_csv(file_path, infer_schema_length=int(1e19))
+        except pl.ComputeError:
+            df = pl.read_csv(file_path, infer_schema_length=0)
         return df.to_dicts()
 
     def _file_info(self, path):
