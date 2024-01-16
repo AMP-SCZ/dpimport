@@ -67,7 +67,7 @@ class DataImporterService:
                     or math.isnan(assessment[variable])
                 )
                 if isUnsupportedValue:
-                    assessment[variable] = None
+                    assessment[variable] = "{var}".format(var=assessment[variable])
 
         self.data_file.update(
             {"metadata": metadata, "subject_assessments": subject_assessments}
