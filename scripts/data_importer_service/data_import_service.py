@@ -44,22 +44,30 @@ class DataImporterService:
 
     def process_data_file(self, path, file_extension):
         file_extension.update({"time_end": file_extension["end"]})
-        collection_base = "{study}{subject}{assessment}".format(
-            study=file_extension["study"],
-            subject=file_extension["subject"],
-            assessment=file_extension["assessment"],
-        ).encode("utf-8")
-        hash_collection = hashlib.sha256(collection_base).hexdigest()
+        study = file_extension["study"]
+        subject = file_extension["subject"]
+        assessmentName = file_extension["assessment"]
+
         metadata = self._file_info(path)
-        metadata.update(
-            {"role": "data", "collection": hash_collection, **file_extension}
-        )
+        metadata.update({"role": "data", **file_extension})
+
         del file_extension["extension"]
 
         subject_assessments = self._read_csv(
             path,
         )
         for assessment in subject_assessments:
+            assessment["subject"] = subject
+            assessment["site"] = study
+            assessment["assessment"] = assessmentName
+
+            if hasattr(assessment, "subject_id"):
+                assessment.pop("subject_id")
+            if hasattr(assessment, "subjectid"):
+                assessment.pop("subjectid")
+            if hasattr(assessment, "study"):
+                assessment.pop("study")
+
             for variable in assessment:
                 isUnsupportedValue = (
                     assessment[variable] == math.inf
@@ -81,6 +89,8 @@ class DataImporterService:
         for participant in participants:
             participant["subject"] = participant.pop("Subject ID")
             participant["study"] = participant.pop("Study")
+            # participant["Consent"] = "2022-06-02"
+            # participant["synced"] = "2024-02-02"
 
         metadata.update(
             {

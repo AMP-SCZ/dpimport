@@ -80,8 +80,8 @@ class TestImporter(TestCase):
             "mode": 0o644,
         }
         participants = [
-            {"Subject ID": "YA1", "Active": 1, "Consent": "-", "Study": "YA"},
-            {"Subject ID": "YA2", "Active": 1, "Consent": "-", "Study": "YA"},
+            {"Subject ID": "YA1", "Active": 1, "Consent": "2022-06-02", "Study": "YA"},
+            {"Subject ID": "YA2", "Active": 1, "Consent": "2022-06-02", "Study": "YA"},
         ]
 
         with patch.object(
@@ -99,20 +99,11 @@ class TestImporter(TestCase):
 
         assert (
             data_to_json[0]
-            == '{"metadata": {"path": "study-subject-assessment-day1to4.csv", "filetype": '
-            '"text/csv", "encoding": "utf-8", "basename": '
-            '"study-subject-assessment-day1to4.csv", "dirname": "/path/to/files", '
-            '"mtime": 1234567890.0, "size": 1024, "uid": 1000, "gid": 1000, "mode": 420, '
-            '"role": "data", "collection": '
-            '"5e74265e4a4d3760737bbf39a513a938b5bd333a958c699d5006ae026ae0017a", "study": '
-            '"study", "subject": "subject", "assessment": "assessment", "units": "day", '
-            '"start": "1", "end": "4", "extension": ".csv", "time_end": "4"}, '
-            '"subject_assessments": [{"var1": 1, "var2": 2, "var3": "str"}, {"var1": 2, '
-            '"var2": 2, "var3": "str", "var4": 5, "var6": 6, "var7": "str2"}]}'
+            == '{"metadata": {"path": "study-subject-assessment-day1to4.csv", "filetype": "text/csv", "encoding": "utf-8", "basename": "study-subject-assessment-day1to4.csv", "dirname": "/path/to/files", "mtime": 1234567890.0, "size": 1024, "uid": 1000, "gid": 1000, "mode": 420, "role": "data", "study": "study", "subject": "subject", "assessment": "assessment", "units": "day", "start": "1", "end": "4", "extension": ".csv", "time_end": "4"}, "subject_assessments": [{"var1": 1, "var2": 2, "var3": "str", "subject": "subject", "site": "study", "assessment": "assessment"}, {"var1": 2, "var2": 2, "var3": "str", "var4": 5, "var6": 6, "var7": "str2", "subject": "subject", "site": "study", "assessment": "assessment"}]}'
         )
         assert (
             data_to_json[1]
-            == '{"metadata": {"filetype": "text/csv", "encoding": "utf-8", "dirname": "/path/to/files", "mtime": 1234567890.0, "size": 1024, "uid": 1000, "gid": 1000, "mode": 420, "role": "metadata", "study": "site", "extension": ".csv"}, "participants": [{"Active": 1, "Consent": "-", "subject": "YA1", "study": "YA"}, {"Active": 1, "Consent": "-", "subject": "YA2", "study": "YA"}]}'
+            == '{"metadata": {"filetype": "text/csv", "encoding": "utf-8", "dirname": "/path/to/files", "mtime": 1234567890.0, "size": 1024, "uid": 1000, "gid": 1000, "mode": 420, "role": "metadata", "study": "site", "extension": ".csv"}, "participants": [{"Active": 1, "Consent": "2022-06-02", "subject": "YA1", "study": "YA"}, {"Active": 1, "Consent": "2022-06-02", "subject": "YA2", "study": "YA"}]}'
         )
 
         self.importer.data_file["subject_assessments"] = []
@@ -121,5 +112,5 @@ class TestImporter(TestCase):
 
         assert data_to_json == (
             None,
-            '{"metadata": {"filetype": "text/csv", "encoding": "utf-8", "dirname": "/path/to/files", "mtime": 1234567890.0, "size": 1024, "uid": 1000, "gid": 1000, "mode": 420, "role": "metadata", "study": "site", "extension": ".csv"}, "participants": [{"Active": 1, "Consent": "-", "subject": "YA1", "study": "YA"}, {"Active": 1, "Consent": "-", "subject": "YA2", "study": "YA"}]}',
+            '{"metadata": {"filetype": "text/csv", "encoding": "utf-8", "dirname": "/path/to/files", "mtime": 1234567890.0, "size": 1024, "uid": 1000, "gid": 1000, "mode": 420, "role": "metadata", "study": "site", "extension": ".csv"}, "participants": [{"Active": 1, "Consent": "2022-06-02", "subject": "YA1", "study": "YA"}, {"Active": 1, "Consent": "2022-06-02", "subject": "YA2", "study": "YA"}]}',
         )

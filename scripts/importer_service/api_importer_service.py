@@ -26,3 +26,13 @@ class ImporterApiService:
         else:
             response = r.json()["data"]
             print(response)
+
+    def refresh_metadata_collection(self, url):
+        r = requests.delete(url, headers=self.headers)
+        status = r.status_code
+
+        if status != 200:
+            print("There was an error.", r.json()["message"])
+        else:
+            response = r.json()["data"]
+            print(response)
