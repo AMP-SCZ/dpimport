@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class DataImporterService:
     DATAFILE = re.compile(
-        r"(?P<study>\w+)\-(?P<subject>\w+)\-(?P<assessment>\w+)\-(?P<units>day)(?P<start>[+-]?\d+(?:\.\d+)?)to(?P<end>[+-]?\d+(?:\.\d+)?)(?P<extension>.csv)"
+        r"(?P<study>\w+)\-(?P<participant>\w+)\-(?P<assessment>\w+)\-(?P<units>day)(?P<start>[+-]?\d+(?:\.\d+)?)to(?P<end>[+-]?\d+(?:\.\d+)?)(?P<extension>.csv)"
     )
     METADATA = re.compile(r"(?P<study>\w+)\_metadata(?P<extension>.csv)")
     GLOB_SUB = re.compile(
@@ -44,22 +44,16 @@ class DataImporterService:
 
     def process_data_file(self, path, file_extension):
         file_extension.update({"time_end": file_extension["end"]})
-        collection_base = "{study}{subject}{assessment}".format(
-            study=file_extension["study"],
-            subject=file_extension["subject"],
-            assessment=file_extension["assessment"],
-        ).encode("utf-8")
-        hash_collection = hashlib.sha256(collection_base).hexdigest()
         metadata = self._file_info(path)
-        metadata.update(
-            {"role": "data", "collection": hash_collection, **file_extension}
-        )
+        metadata.update({"role": "data", **file_extension})
+
         del file_extension["extension"]
 
-        subject_assessments = self._read_csv(
+        participant_assessments = self._read_csv(
             path,
         )
-        for assessment in subject_assessments:
+        for assessment in participant_assessments:
+
             for variable in assessment:
                 isUnsupportedValue = (
                     assessment[variable] == math.inf
@@ -70,7 +64,7 @@ class DataImporterService:
                     assessment[variable] = None
 
         self.data_file.update(
-            {"metadata": metadata, "subject_assessments": subject_assessments}
+            {"metadata": metadata, "participant_assessments": participant_assessments}
         )
         return
 
@@ -79,10 +73,10 @@ class DataImporterService:
         participants = self._read_csv(path)
 
         for participant in participants:
-            participant["subject"] = participant.pop("Subject ID")
+            participant["participant"] = participant.pop("Subject ID")
             participant["study"] = participant.pop("Study")
-            participant["Consent"] = "2022-06-02"
-            participant["synced"] = "2022-06-02"
+            # participant["Consent"] = "2022-06-02"
+            # participant["synced"] = "2024-02-02"
 
         metadata.update(
             {
@@ -128,7 +122,7 @@ class DataImporterService:
     def processed_data_to_json(self):
         processed_data = (
             json.dumps(self.data_file)
-            if self.data_file and len(self.data_file["subject_assessments"]) > 0
+            if self.data_file and len(self.data_file["participant_assessments"]) > 0
             else None
         )
         processed_metadata = (
