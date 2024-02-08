@@ -68,12 +68,14 @@ class Database(object):
         :type probe: dict
         '''
         doc = self.db.toc.find_one({
-            'content': probe['content']
+            'content': probe['content'],
+            'basename': probe['basename']
         })
         if not doc:
             # since it's not in data, check if it's in metadata
             doc = self.db.metadata.find_one({
-                'content': probe['content']
+                'content': probe['content'],
+                'basename': probe['basename']
             })
 
         if doc:
