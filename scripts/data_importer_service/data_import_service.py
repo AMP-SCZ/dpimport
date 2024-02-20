@@ -75,8 +75,8 @@ class DataImporterService:
         for participant in participants:
             participant["participant"] = participant.pop("Subject ID")
             participant["study"] = participant.pop("Study")
-            # participant["Consent"] = "2022-06-02"
-            # participant["synced"] = "2024-02-02"
+            participant["Consent"] = "2022-06-02"
+            participant["synced"] = "2024-02-02"
 
         metadata.update(
             {
