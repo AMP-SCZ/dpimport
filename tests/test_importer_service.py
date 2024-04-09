@@ -109,7 +109,6 @@ class TestImporter(TestCase):
             )
 
         data_to_json = self.importer.processed_data_to_json()
-        pprint.pprint(data_to_json)
 
         assert (
             data_to_json[0]
