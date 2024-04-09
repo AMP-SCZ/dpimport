@@ -1,7 +1,6 @@
 import math
 import re
 import os
-import hashlib
 import json
 import polars as pl
 
@@ -43,8 +42,10 @@ class DataImporterService:
             return None
 
     def process_data_file(self, path, file_extension):
-        file_extension.update({"time_end": file_extension["end"]})
         metadata = self._file_info(path)
+        assessment_variables = []
+
+        file_extension.update({"time_end": file_extension["end"]})
         metadata.update({"role": "data", **file_extension})
 
         del file_extension["extension"]
@@ -52,9 +53,12 @@ class DataImporterService:
         participant_assessments = self._read_csv(
             path,
         )
+
         for assessment in participant_assessments:
 
             for variable in assessment:
+                assessment_variables.append(variable)
+
                 isUnsupportedValue = (
                     assessment[variable] == math.inf
                     or assessment[variable] == -math.inf
@@ -63,9 +67,20 @@ class DataImporterService:
                 if isUnsupportedValue:
                     assessment[variable] = None
 
+        var_set = set(assessment_variables)
+        assessment_variables = [
+            dict(name=variable, assessment=metadata.get("assessment"))
+            for variable in sorted(var_set)
+        ]
+
         self.data_file.update(
-            {"metadata": metadata, "participant_assessments": participant_assessments}
+            {
+                "metadata": metadata,
+                "participant_assessments": participant_assessments,
+                "assessment_variables": assessment_variables,
+            }
         )
+
         return
 
     def process_metadata_file(self, path, file_extension):
@@ -75,8 +90,6 @@ class DataImporterService:
         for participant in participants:
             participant["participant"] = participant.pop("Subject ID")
             participant["study"] = participant.pop("Study")
-            participant["Consent"] = "2022-06-02"
-            participant["synced"] = "2024-02-02"
 
         metadata.update(
             {
@@ -130,5 +143,4 @@ class DataImporterService:
             if self.metadata_file and len(self.metadata_file["participants"]) > 0
             else None
         )
-        print("processed file data to json")
         return processed_data, processed_metadata

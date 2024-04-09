@@ -1,5 +1,6 @@
 from unittest import TestCase
 from unittest.mock import patch
+import pprint
 from scripts.data_importer_service.data_import_service import DataImporterService
 
 
@@ -111,7 +112,7 @@ class TestImporter(TestCase):
 
         assert (
             data_to_json[0]
-            == '{"metadata": {"path": "study-participant-assessment-day1to4.csv", "filetype": "text/csv", "encoding": "utf-8", "basename": "study-participant-assessment-day1to4.csv", "dirname": "/path/to/files", "mtime": 1234567890.0, "size": 1024, "uid": 1000, "gid": 1000, "mode": 420, "role": "data", "study": "study", "participant": "participant", "assessment": "assessment", "units": "day", "start": "1", "end": "4", "extension": ".csv", "time_end": "4"}, "participant_assessments": [{"var1": 1, "var2": 2, "var3": "str"}, {"var1": 2, "var2": 2, "var3": "str", "var4": 5, "var6": 6, "var7": "str2"}]}'
+            == '{"metadata": {"path": "study-participant-assessment-day1to4.csv", "filetype": "text/csv", "encoding": "utf-8", "basename": "study-participant-assessment-day1to4.csv", "dirname": "/path/to/files", "mtime": 1234567890.0, "size": 1024, "uid": 1000, "gid": 1000, "mode": 420, "role": "data", "study": "study", "participant": "participant", "assessment": "assessment", "units": "day", "start": "1", "end": "4", "extension": ".csv", "time_end": "4"}, "participant_assessments": [{"var1": 1, "var2": 2, "var3": "str"}, {"var1": 2, "var2": 2, "var3": "str", "var4": 5, "var6": 6, "var7": "str2"}], "assessment_variables": [{"name": "var1", "assessment": "assessment"}, {"name": "var2", "assessment": "assessment"}, {"name": "var3", "assessment": "assessment"}, {"name": "var4", "assessment": "assessment"}, {"name": "var6", "assessment": "assessment"}, {"name": "var7", "assessment": "assessment"}]}'
         )
         assert (
             data_to_json[1]
