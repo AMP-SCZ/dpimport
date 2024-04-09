@@ -53,6 +53,7 @@ class DataImporterService:
         participant_assessments = self._read_csv(
             path,
         )
+
         for assessment in participant_assessments:
 
             for variable in assessment:
@@ -67,11 +68,9 @@ class DataImporterService:
                     assessment[variable] = None
 
         var_set = set(assessment_variables)
-        assessment_variables = list(var_set)
-        assessment_variables.sort()
         assessment_variables = [
             dict(name=variable, assessment=metadata.get("assessment"))
-            for variable in assessment_variables
+            for variable in sorted(var_set)
         ]
 
         self.data_file.update(
