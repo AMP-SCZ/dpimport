@@ -69,6 +69,10 @@ class DataImporterService:
         var_set = set(assessment_variables)
         assessment_variables = list(var_set)
         assessment_variables.sort()
+        assessment_variables = [
+            dict(name=variable, assessment=metadata.get("assessment"))
+            for variable in assessment_variables
+        ]
 
         self.data_file.update(
             {
