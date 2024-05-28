@@ -33,9 +33,14 @@ def main():
         importer_service.process_file(file)
         data, meta = importer_service.processed_data_to_json()
         if data:
+            print("Day Data struct:")
+            print(data)
             api.upsert_file(api.routes(api_url, "day_data"), data)
 
         if meta:
+            print("Metadata struct:")
+            print(meta)
+
             api.upsert_file(api.routes(api_url, "metadata"), meta)
 
 

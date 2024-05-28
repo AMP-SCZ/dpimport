@@ -20,12 +20,14 @@ class ImporterApiService:
             data=file_data,
         )
         status = r.status_code
-        if status != 200:
+        try:
             response = r.json()
             print(response)
-        else:
-            response = r.json()["data"]
-            print(response)
+        except Exception as e:
+            print(status)
+            print(f"Error: {e}")
+            print(r)
+            pass
 
     def refresh_metadata_collection(self, url):
         r = requests.delete(url, headers=self.headers)

@@ -20,7 +20,6 @@ def main():
         "x-api-key": config["api_key"],
     }
     api = api_importer_service.ImporterApiService(credentials)
-    print(api.routes(api_url, "metadata"), "THE ROUTE")
     api.refresh_metadata_collection(api.routes(api_url, "metadata"))
 
 
