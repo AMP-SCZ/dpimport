@@ -22,7 +22,12 @@ def main():
         "x-api-user": config["api_user"],
         "x-api-key": config["api_key"],
     }
-    api = api_importer_service.ImporterApiService(credentials)
+    if("verify_ssl" in config and config["verify_ssl"] == False):
+        verify_ssl = False
+    else:
+        verify_ssl = True
+
+    api = api_importer_service.ImporterApiService(credentials, verify_ssl)
 
     for file in glob.iglob(args.expr, recursive=True):
         data_file = {}
