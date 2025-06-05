@@ -11,18 +11,34 @@ simple [`glob`](<https://en.wikipedia.org/wiki/Glob_(programming)>) expression.
 
 ## Installation
 
-Just use `pip`
+Option 1: Install via `pip`
+
 
 ```bash
 pip install https://github.com/AMP-SCZ/dpimport.git
 ```
 
+Option 2: Clone the repository and run manually
+
+```bash
+git clone https://github.com/AMP-SCZ/dpimport.git
+cd dpimport
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python scripts/import.py -c config.yml '/PHOENIX/GENERAL/STUDY_A/SUB_001/DATA_TYPE/processed/*.csv'
+```
+
 ## Configuration
 
 DPimport requires a configuration file in YAML format, passed as a command
-line argument with `-c|--config`, for establishing a MongoDB database
-connection. You will find an example configuration file in the `examples`
-directory within this repository.
+line argument with `-c|--config`, for connecting with an instance of the DPdash
+application API. The configuration file should contain the following fields:  
+
+api_url - Endpoint for the DPdash API
+api_user - Username for the DPdash API
+api_key - API key for the DPdash API
+verify_ssl - Whether to verify SSL certificates (default: True)
 
 ## Usage
 

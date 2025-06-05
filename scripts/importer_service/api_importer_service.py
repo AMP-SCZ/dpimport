@@ -5,8 +5,10 @@ class ImporterApiService:
     def __init__(
         self,
         credentials,
+        verify_ssl=True,
     ):
         self.headers = {"content-type": "application/json", **credentials}
+        self.verify_ssl = verify_ssl
 
     def routes(self, url, path):
         routes = {"metadata": url + "metadata", "day_data": url + "day"}
@@ -18,6 +20,7 @@ class ImporterApiService:
             url,
             headers=self.headers,
             data=file_data,
+            verify=self.verify_ssl,
         )
         status = r.status_code
         try:
@@ -30,7 +33,7 @@ class ImporterApiService:
             pass
 
     def refresh_metadata_collection(self, url):
-        r = requests.delete(url, headers=self.headers)
+        r = requests.delete(url, headers=self.headers, verify=self.verify_ssl)
         status = r.status_code
 
         if status != 200:
